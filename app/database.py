@@ -20,11 +20,14 @@ def _make_engine():
     if url.startswith("sqlite"):
         return create_async_engine(url, echo=settings.DEBUG, connect_args={"check_same_thread": False})
     else:
+        # --- IDI ADD CHEYYI ---
+        if url and url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        # ----------------------
         return create_async_engine(url, echo=settings.DEBUG)
 
 engine = _make_engine()
 async_session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-
 
 # ── Models ─────────────────────────────────────────────────────
 
