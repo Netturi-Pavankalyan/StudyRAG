@@ -1,0 +1,1 @@
+# StudyRAG — Smart Study Assistant
