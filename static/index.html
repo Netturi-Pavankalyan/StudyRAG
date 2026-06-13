@@ -944,7 +944,19 @@
     .chat-layout { grid-template-columns: 1fr; height: auto; }
     .chat-sidebar { display: none; }
     .chat-main { height: calc(100vh - 180px); }
-    .main-content { padding: 1rem; }
+    .main-content { padding: 0.75rem; overflow-x: hidden; }
+
+    /* Fix gen-controls overflow on mobile */
+    .gen-controls {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+      padding: 1rem;
+    }
+    .gen-field { width: 100%; }
+    .gen-field select, .gen-field input[type="number"] { width: 100%; }
+    .btn-generate, .btn-export-pdf { width: 100%; text-align: center; }
+    .page-header h2 { font-size: 1.3rem; }
   }
 </style>
 </head>
@@ -1647,14 +1659,13 @@ function selectMobileDoc(sel) {
 }
 
 function refreshChatDocList() {
-  // Mobile selector
+  // Mobile selector (old dropdown - hide it)
   const mobileSelector = document.getElementById('mobile-doc-selector');
-  const mobileSelect = document.getElementById('mobile-doc-select');
-  if (mobileSelector && mobileSelect) {
-    mobileSelector.style.display = window.innerWidth <= 768 ? 'block' : 'none';
-    mobileSelect.innerHTML = '<option value="">🌐 All docs + Web search</option>' +
-      state.docs.map(d => `<option value="${d.id}">📄 ${escHtml(d.name.replace('.pdf',''))}</option>`).join('');
-  }
+  if (mobileSelector) mobileSelector.style.display = 'none';
+
+  // Refresh new slide panel
+  refreshMobileDocPanel();
+
   const el = document.getElementById('chat-doc-list');
   el.innerHTML = state.docs.map(d => `
     <div class="doc-select-item" data-doc-id="${d.id}" onclick="selectChatDoc(this)">
