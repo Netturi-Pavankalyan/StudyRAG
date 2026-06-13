@@ -1147,24 +1147,33 @@
             </div>
 
             <!-- Mobile Slide Panel Overlay -->
-            <div id="mobile-slide-overlay" onclick="toggleMobilePanel()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:98;"></div>
+            <div id="mobile-slide-overlay" onclick="toggleMobilePanel()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:98;"></div>
 
-            <!-- Mobile Slide Panel -->
-            <div id="mobile-slide-panel" style="display:none;position:fixed;top:0;right:0;width:80%;max-width:300px;height:100vh;background:var(--card);z-index:99;box-shadow:-4px 0 20px rgba(0,0,0,0.15);padding:1.5rem 1rem;overflow-y:auto;flex-direction:column;gap:0.75rem;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-                <span style="font-size:0.85rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Select Document</span>
-                <button onclick="toggleMobilePanel()" style="width:30px;height:30px;border:none;background:var(--bg);border-radius:8px;font-size:16px;cursor:pointer;">✕</button>
+            <!-- Mobile Slide Panel (left side) -->
+            <div id="mobile-slide-panel" style="display:none;position:fixed;top:0;left:0;width:82%;max-width:300px;height:100vh;background:var(--card);z-index:99;box-shadow:4px 0 20px rgba(0,0,0,0.15);padding:1.25rem 1rem;overflow-y:auto;flex-direction:column;gap:0.6rem;">
+              
+              <!-- Header -->
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+                <span style="font-size:0.85rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">📂 Documents</span>
+                <button onclick="toggleMobilePanel()" style="width:30px;height:30px;border:none;background:var(--bg);border-radius:8px;font-size:16px;cursor:pointer;color:var(--text-muted);">✕</button>
               </div>
 
-              <div id="mobile-docs-panel-list" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;"></div>
-
-              <div onclick="navigate('documents');toggleMobilePanel();" style="padding:0.6rem 0.75rem;border-radius:8px;font-size:0.85rem;font-weight:700;color:var(--purple);cursor:pointer;border:1.5px dashed var(--purple);background:var(--purple-light);text-align:center;margin-bottom:0.5rem;">
+              <!-- Upload button TOP -->
+              <div onclick="navigate('documents');toggleMobilePanel();" style="padding:0.6rem 0.75rem;border-radius:8px;font-size:0.85rem;font-weight:700;color:var(--purple);cursor:pointer;border:1.5px dashed var(--purple);background:var(--purple-light);text-align:center;margin-bottom:0.25rem;">
                 📤 Upload Document
               </div>
 
-              <div style="padding:0.6rem 0.75rem;border-radius:8px;font-size:0.78rem;font-weight:600;color:#7a5c00;background:var(--yellow-light);border:1.5px solid var(--yellow);line-height:1.5;">
+              <!-- Note card TOP -->
+              <div style="padding:0.5rem 0.75rem;border-radius:8px;font-size:0.75rem;font-weight:600;color:#7a5c00;background:var(--yellow-light);border:1.5px solid var(--yellow);line-height:1.5;margin-bottom:0.5rem;">
                 💡 Answer not in document? I will search the web for you!
               </div>
+
+              <!-- Divider -->
+              <div style="font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.25rem;">Your Documents</div>
+
+              <!-- Documents list -->
+              <div id="mobile-docs-panel-list" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+
             </div>
             <div class="chat-messages" id="chat-messages">
               <div class="msg bot">
