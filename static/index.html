@@ -1159,7 +1159,7 @@
               <div style="font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.25rem;">Your Documents</div>
 
               <!-- Documents list -->
-              <div id="mobile-docs-panel-list" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+              <div id="mobile-docs-panel-list" style="display:flex;flex-direction:column;gap:0.5rem;overflow:hidden;"></div>
 
             </div>
             <div class="chat-messages" id="chat-messages">
@@ -1604,14 +1604,14 @@ function refreshMobileDocPanel() {
   if (trigger) trigger.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
   list.innerHTML = state.docs.map(d => `
     <div onclick="selectDocFromPanel('${d.id}', '${escAttr(d.name)}')"
-      style="padding:0.6rem 0.75rem;border-radius:8px;font-size:0.85rem;font-weight:700;
+      style="padding:0.6rem 0.75rem;border-radius:8px;font-size:0.82rem;font-weight:700;
       color:${state.activeChatDoc?.id === d.id ? 'var(--purple)' : 'var(--text-muted)'};
       background:${state.activeChatDoc?.id === d.id ? 'var(--purple-light)' : 'var(--bg)'};
       border:1.5px solid ${state.activeChatDoc?.id === d.id ? 'var(--purple)' : 'transparent'};
-      cursor:pointer;display:flex;align-items:center;gap:0.5rem;">
-      📄 ${escHtml(d.name.replace(/\.(pdf|docx|txt)$/i,''))}
+      cursor:pointer;display:flex;align-items:center;gap:0.5rem;overflow:hidden;">
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📄 ${escHtml(d.name.replace(/\.(pdf|docx|txt)$/i,''))}</span>
       <button onclick="event.stopPropagation();deletePanelDoc('${d.id}')" 
-        style="margin-left:auto;width:24px;height:24px;border:none;background:transparent;
+        style="flex-shrink:0;width:24px;height:24px;border:none;background:transparent;
         color:var(--pink);cursor:pointer;font-size:14px;border-radius:6px;">🗑️</button>
     </div>`).join('');
 }
