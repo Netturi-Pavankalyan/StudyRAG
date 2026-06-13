@@ -30,8 +30,8 @@ class Settings(BaseSettings):
     GROQ_VISION_MODEL: str = "meta-llama/llama-4-scout-17b-16e-instruct"
 
     # ── Context / truncation limits ────────────────────────────
-    DOC_CONTEXT_CHARS: int = 2000
-    CHAT_CONTEXT_CHARS: int = 2000
+    DOC_CONTEXT_CHARS: int = 4000
+    CHAT_CONTEXT_CHARS: int = 4000
     PDF_MAX_CHARS: int = 6000
     CHAT_MESSAGE_MAX_CHARS: int = 2000
     CHAT_HISTORY_MAX_CHARS: int = 8000

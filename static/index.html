@@ -747,6 +747,10 @@
     background: var(--bg);
     outline: none;
     transition: border-color 0.2s;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .gen-field select:focus, .gen-field input:focus { border-color: var(--purple); }
