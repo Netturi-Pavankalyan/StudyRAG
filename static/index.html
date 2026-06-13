@@ -934,7 +934,7 @@
   }
 
   /* ── RESPONSIVE ── */
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
     .app-layout { grid-template-columns: 1fr; grid-template-rows: 60px auto 1fr; }
     .sidebar { display: flex; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1.5px solid var(--border); padding: 0.5rem; flex-wrap: nowrap; }
     .sidebar-section { display: none; }
@@ -944,20 +944,7 @@
     .chat-layout { grid-template-columns: 1fr; height: auto; }
     .chat-sidebar { display: none; }
     .chat-main { height: calc(100vh - 180px); }
-    .main-content { padding: 0.75rem; overflow-x: hidden; }
-
-    /* Fix gen-controls overflow on mobile */
-    .gen-controls {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0.75rem;
-      padding: 1rem;
-    }
-    .gen-field { width: 100%; }
-    .gen-field select, .gen-field input[type="number"] { width: 100%; }
-    .btn-generate, .btn-export-pdf { width: 100%; text-align: center; }
-    .page-header h2 { font-size: 1.3rem; }
-  }
+    .main-content { padding: 0.75rem; overflow-x: hidden; }}
 </style>
 </head>
 <body>
