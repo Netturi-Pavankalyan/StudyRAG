@@ -1131,6 +1131,28 @@
             <div class="chat-header">
               <span style="font-size:0.88rem;font-weight:800;color:var(--text-muted);">Context:</span>
               <div class="doc-badge" id="active-doc-badge">🌐 All docs + Web search</div>
+              <button id="mobile-panel-trigger" onclick="toggleMobilePanel()" style="display:none;width:32px;height:32px;border:1.5px solid var(--border);background:var(--bg);border-radius:8px;font-size:16px;cursor:pointer;margin-left:auto;flex-shrink:0;">📂</button>
+            </div>
+
+            <!-- Mobile Slide Panel Overlay -->
+            <div id="mobile-slide-overlay" onclick="toggleMobilePanel()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:98;"></div>
+
+            <!-- Mobile Slide Panel -->
+            <div id="mobile-slide-panel" style="display:none;position:fixed;top:0;right:0;width:80%;max-width:300px;height:100vh;background:var(--card);z-index:99;box-shadow:-4px 0 20px rgba(0,0,0,0.15);padding:1.5rem 1rem;overflow-y:auto;flex-direction:column;gap:0.75rem;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                <span style="font-size:0.85rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Select Document</span>
+                <button onclick="toggleMobilePanel()" style="width:30px;height:30px;border:none;background:var(--bg);border-radius:8px;font-size:16px;cursor:pointer;">✕</button>
+              </div>
+
+              <div id="mobile-docs-panel-list" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;"></div>
+
+              <div onclick="navigate('documents');toggleMobilePanel();" style="padding:0.6rem 0.75rem;border-radius:8px;font-size:0.85rem;font-weight:700;color:var(--purple);cursor:pointer;border:1.5px dashed var(--purple);background:var(--purple-light);text-align:center;margin-bottom:0.5rem;">
+                📤 Upload Document
+              </div>
+
+              <div style="padding:0.6rem 0.75rem;border-radius:8px;font-size:0.78rem;font-weight:600;color:#7a5c00;background:var(--yellow-light);border:1.5px solid var(--yellow);line-height:1.5;">
+                💡 Answer not in document? I will search the web for you!
+              </div>
             </div>
             <div class="chat-messages" id="chat-messages">
               <div class="msg bot">
@@ -1559,14 +1581,56 @@ function stopChat() {
 }
 
 function toggleMobilePanel() {
-  const panel = document.getElementById('mobile-panel-content');
-  const arrow = document.getElementById('mobile-panel-arrow');
-  if (panel.style.display === 'none') {
-    panel.style.display = 'block';
-    arrow.textContent = '▲';
-  } else {
-    panel.style.display = 'none';
-    arrow.textContent = '▼';
+  const panel = document.getElementById('mobile-slide-panel');
+  const overlay = document.getElementById('mobile-slide-overlay');
+  if (!panel) return;
+  const isOpen = panel.style.display === 'flex';
+  panel.style.display = isOpen ? 'none' : 'flex';
+  overlay.style.display = isOpen ? 'none' : 'block';
+}
+
+function refreshMobileDocPanel() {
+  const list = document.getElementById('mobile-docs-panel-list');
+  const trigger = document.getElementById('mobile-panel-trigger');
+  if (!list) return;
+  if (trigger) trigger.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+  list.innerHTML = state.docs.map(d => `
+    <div onclick="selectDocFromPanel('${d.id}', '${escAttr(d.name)}')"
+      style="padding:0.6rem 0.75rem;border-radius:8px;font-size:0.85rem;font-weight:700;
+      color:${state.activeChatDoc?.id === d.id ? 'var(--purple)' : 'var(--text-muted)'};
+      background:${state.activeChatDoc?.id === d.id ? 'var(--purple-light)' : 'var(--bg)'};
+      border:1.5px solid ${state.activeChatDoc?.id === d.id ? 'var(--purple)' : 'transparent'};
+      cursor:pointer;display:flex;align-items:center;gap:0.5rem;">
+      📄 ${escHtml(d.name.replace(/\.(pdf|docx|txt)$/i,''))}
+      <button onclick="event.stopPropagation();deletePanelDoc('${d.id}')" 
+        style="margin-left:auto;width:24px;height:24px;border:none;background:transparent;
+        color:var(--pink);cursor:pointer;font-size:14px;border-radius:6px;">🗑️</button>
+    </div>`).join('');
+}
+
+function selectDocFromPanel(id, name) {
+  state.activeChatDoc = { id, name };
+  state.chatMessages = [];
+  document.getElementById('active-doc-badge').textContent = '📄 ' + name.replace(/\.(pdf|docx|txt)$/i,'');
+  refreshMobileDocPanel();
+  toggleMobilePanel();
+  // Reset chat
+  document.getElementById('chat-messages').innerHTML = `
+    <div class="msg bot">
+      <div class="msg-avatar">AI</div>
+      <div><div class="msg-bubble">Hi! 👋 Ask me anything about <b>${escHtml(name)}</b>!</div></div>
+    </div>`;
+}
+
+async function deletePanelDoc(id) {
+  if (!confirm('Delete this document?')) return;
+  const r = await fetch('/api/documents/' + id, { method: 'DELETE', headers: getAuthHeaders() });
+  if (r.ok) {
+    state.docs = state.docs.filter(d => d.id !== id);
+    renderDocs();
+    updateStats();
+    refreshMobileDocPanel();
+    toast('Document deleted', 'info');
   }
 }
 
