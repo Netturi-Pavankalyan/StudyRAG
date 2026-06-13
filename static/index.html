@@ -1119,8 +1119,11 @@
         <div class="chat-layout">
           <div class="chat-sidebar">
             <h3>Select Document</h3>
-            <div class="doc-select-item selected" data-doc-id="" onclick="selectChatDoc(this)">
-              🌐 All docs + Web
+            <div onclick="navigate('documents')" style="padding:0.6rem 0.75rem;border-radius:8px;font-size:0.82rem;font-weight:700;color:var(--purple);cursor:pointer;border:1.5px dashed var(--purple);background:var(--purple-light);text-align:center;margin-bottom:0.5rem;">
+              📤 Upload Document
+            </div>
+            <div style="padding:0.6rem 0.75rem;border-radius:8px;font-size:0.78rem;font-weight:600;color:#7a5c00;background:var(--yellow-light);border:1.5px solid var(--yellow);margin-bottom:0.5rem;line-height:1.5;">
+              💡 Answer not in document? I will automatically search the web for you!
             </div>
             <div id="chat-doc-list"></div>
           </div>
@@ -1141,10 +1144,27 @@
               ⏳ Daily token limit reached — please wait before sending another message.
               <span class="rate-limit-countdown" id="chat-rate-countdown"></span>
             </div>
-            <div id="mobile-doc-selector" style="display:none; padding:0.5rem 1.25rem; border-top:1.5px solid var(--border);">
-              <select id="mobile-doc-select" onchange="selectMobileDoc(this)" style="width:100%;padding:0.5rem 0.75rem;border:1.5px solid var(--border);border-radius:8px;font-family:Nunito,sans-serif;font-size:0.85rem;font-weight:700;color:var(--text);background:var(--bg);outline:none;">
-                <option value="">🌐 All docs + Web search</option>
-              </select>
+            <!-- Mobile Doc Panel -->
+            <div id="mobile-doc-selector" style="display:none;">
+              <!-- Trigger button -->
+              <div style="padding:0.5rem 1.25rem; border-top:1.5px solid var(--border);">
+                <button onclick="toggleMobilePanel()" id="mobile-panel-btn" style="width:100%;padding:0.6rem 1rem;background:var(--purple-light);border:1.5px solid var(--purple);border-radius:10px;font-family:Nunito,sans-serif;font-size:0.85rem;font-weight:800;color:var(--purple);cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+                  <span id="mobile-selected-name">📄 Select Document</span>
+                  <span id="mobile-panel-arrow">▼</span>
+                </button>
+              </div>
+              <!-- Collapsible panel -->
+              <div id="mobile-panel-content" style="display:none;position:absolute;left:0;right:0;background:var(--card);border-top:1.5px solid var(--border);border-bottom:1.5px solid var(--border);padding:0.75rem 1.25rem;z-index:50;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+                <select id="mobile-doc-select" onchange="selectMobileDoc(this)" style="width:100%;padding:0.6rem 0.75rem;border:1.5px solid var(--border);border-radius:8px;font-family:Nunito,sans-serif;font-size:0.85rem;font-weight:700;color:var(--text);background:var(--bg);outline:none;margin-bottom:0.5rem;">
+                  <option value="">— Select a document —</option>
+                </select>
+                <div onclick="navigate('documents');toggleMobilePanel();" style="padding:0.5rem 0.75rem;border-radius:8px;font-size:0.82rem;font-weight:700;color:var(--purple);cursor:pointer;border:1.5px dashed var(--purple);background:var(--purple-light);text-align:center;margin-bottom:0.5rem;">
+                  📤 Upload Document
+                </div>
+                <div style="padding:0.5rem 0.75rem;border-radius:8px;font-size:0.78rem;font-weight:600;color:#7a5c00;background:var(--yellow-light);border:1.5px solid var(--yellow);line-height:1.5;">
+                  💡 Answer not in document? I will search the web for you!
+                </div>
+              </div>
             </div>
             <div class="chat-input-area">
               <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask a question about your documents..." onkeydown="handleChatKey(event)"></textarea>
@@ -1538,12 +1558,28 @@ function stopChat() {
   }
 }
 
+function toggleMobilePanel() {
+  const panel = document.getElementById('mobile-panel-content');
+  const arrow = document.getElementById('mobile-panel-arrow');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    arrow.textContent = '▲';
+  } else {
+    panel.style.display = 'none';
+    arrow.textContent = '▼';
+  }
+}
+
 function selectMobileDoc(sel) {
   const id = sel.value;
   const name = sel.options[sel.selectedIndex].text;
   state.activeChatDoc = id ? { id, name } : null;
   state.chatMessages = [];
   document.getElementById('active-doc-badge').textContent = id ? '📄 ' + name : '🌐 All docs + Web search';
+  // Update button label and close panel
+  const btn = document.getElementById('mobile-selected-name');
+  if (btn) btn.textContent = id ? '📄 ' + name.replace('📄 ','') : '📄 Select Document';
+  toggleMobilePanel();
 }
 
 function refreshChatDocList() {
@@ -1567,8 +1603,35 @@ function selectChatDoc(el) {
   el.classList.add('selected');
   const id = el.dataset.docId;
   const name = el.textContent.trim();
+
+  // Save current chat messages before switching
+  if (state.activeChatDoc) {
+    state.docChats = state.docChats || {};
+    state.docChats[state.activeChatDoc.id || 'all'] = {
+      messages: [...state.chatMessages],
+      dom: document.getElementById('chat-messages').innerHTML
+    };
+  }
+
   state.activeChatDoc = id ? { id, name } : null;
-  state.chatMessages = [];
+  const key = id || 'all';
+
+  // Restore chat for selected document
+  state.docChats = state.docChats || {};
+  if (state.docChats[key]) {
+    state.chatMessages = [...state.docChats[key].messages];
+    document.getElementById('chat-messages').innerHTML = state.docChats[key].dom;
+  } else {
+    state.chatMessages = [];
+    document.getElementById('chat-messages').innerHTML = `
+      <div class="msg bot">
+        <div class="msg-avatar">AI</div>
+        <div>
+          <div class="msg-bubble">Hi! 👋 I'm your Smart Study Assistant. Ask me anything about <b>${name}</b>!</div>
+        </div>
+      </div>`;
+  }
+
   document.getElementById('active-doc-badge').textContent = id ? '📄 ' + name : '🌐 All docs + Web search';
 }
 

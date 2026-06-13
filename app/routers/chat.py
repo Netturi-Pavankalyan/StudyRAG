@@ -1,3 +1,4 @@
+
 """Chat with documents route."""
 
 import uuid
@@ -64,12 +65,11 @@ async def chat(body: ChatBody, current_user: dict = Depends(get_current_user), d
         doc = result.scalars().first()
         if doc:
             doc_name = doc.name
-            doc_text = get_doc_full_text(doc.path, doc.id) # Uses LRU cache internally
+            doc_text = get_doc_full_text(doc.path, doc.id)
             source = "document"
-    
-    if not doc_text:
-        # Fallback to all user documents
-        result = await db.execute(select(Document).where(Document.user_id == uid).limit(3))
+
+    if not doc_text and not body.doc_id:
+        result = await db.execute(select(Document).where(Document.user_id == uid).order_by(Document.uploaded_at.desc()).limit(3))
         docs = result.scalars().all()
         texts = []
         for doc in docs:
@@ -83,11 +83,14 @@ async def chat(body: ChatBody, current_user: dict = Depends(get_current_user), d
     if doc_text:
         system = (
             f'You are a Smart Study Assistant. The student uploaded "{doc_name}".\n\n'
-            f'Read the student\'s question carefully and respond in the most appropriate format:\n\n'
-            f'- LIST questions: reply ONLY with a clean numbered list.\n'
-            f'- SHORT questions: give a clear direct answer in 2-4 sentences.\n'
-            f'- EXPLAIN questions: give a thorough answer min 150 words.\n\n'
-            f'DOCUMENT:\n{doc_text[:settings.CHAT_CONTEXT_CHARS]}'
+            f'Answer the question using this format:\n\n'
+            f'RULE 1: First, answer ONLY using content found in the document.\n'
+            f'RULE 2: After answering from the document, check if there is additional useful information NOT in the document.\n'
+            f'RULE 3: If yes, add a section at the end with this exact bold heading: **📚 Additional Information (Not in your document):**\n'
+            f'Then provide the additional information below that heading.\n'
+            f'RULE 4: If everything is answered from the document, do NOT add the additional section.\n\n'
+            f'DOCUMENT NAME: {doc_name}\n'
+            f'DOCUMENT CONTENT:\n{doc_text[:settings.CHAT_CONTEXT_CHARS]}'
         )
     else:
         system = "You are a Smart Study Assistant. Answer in the format best suited to the question."
